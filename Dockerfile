@@ -69,8 +69,6 @@ RUN wget "http://www.adminer.org/latest.php" -O /var/www/html/adminer.php
 RUN chmod 755 /start.sh /etc/apache2/foreground.sh /localdb-run.sh /entrypoint.sh
 WORKDIR /var/www/html
 EXPOSE 22 80 3306
-CMD ["/bin/bash", "/start.sh"]
+CMD ["/bin/bash", "/start.sh", "/localdb-run.sh"]
 
-
-#ENTRYPOINT ["/localdb-run.sh"]
 #RUN sed -e 's/user.=.mysql/user=root/' -i /etc/mysql/my.cnf
