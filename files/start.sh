@@ -21,6 +21,8 @@ if [ ! -d /var/lib/mysql/mysql ]; then
   /usr/bin/mysql_install_db > /dev/null
 fi
 
+/entrypoint.sh
+
 # Setup Drupal
 if [ ! -f /var/www/html/sites/default/settings.php ]; then
 	# Start mysql

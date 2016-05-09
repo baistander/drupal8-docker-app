@@ -8,7 +8,7 @@ RUN apt-get update
 RUN dpkg-divert --local --rename --add /sbin/initctl
 RUN ln -sf /bin/true /sbin/initctl
 
-RUN apt-get -y install git curl wget supervisor openssh-server \
+RUN apt-get -y install git drush curl wget supervisor openssh-server \
   mysql-client mysql-server apache2 libapache2-mod-php5 pwgen \
   vim-tiny mc python-setuptools unison memcached php5-memcache \
   php5-cli php5-mysql php-apc php5-gd php5-curl php5-xdebug; \
@@ -33,17 +33,19 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install Drush, Drupal Console and pimp-my-log
-RUN HOME=/ /usr/local/bin/composer global require drush/drush:dev-master; \
-  HOME=/ /usr/local/bin/composer global require drupal/console:dev-master; \
-  HOME=/ /usr/local/bin/composer require "potsky/pimp-my-log"
-RUN HOME=/ /usr/local/bin/composer global require drush/drush:dev-master
+#RUN HOME=/ /usr/local/bin/composer global require drush/drush:dev-master; \
+#  HOME=/ /usr/local/bin/composer global require drupal/console:dev-master; \
+#  HOME=/ /usr/local/bin/composer require "potsky/pimp-my-log"
+#RUN HOME=/ /usr/local/bin/composer global require drush/drush:dev-master
 
 # Install supervisor
 COPY ./files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY ./files/start.sh /start.sh
 COPY ./files/foreground.sh /etc/apache2/foreground.sh
+COPY ./files/localdb-run.sh /localdb-run.sh
+COPY ./files/entrypoint.sh /entrypoint.sh
 
-#Apache & Xdebug
+# Apache & Xdebug
 RUN rm /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-enabled/*
 ADD ./files/000-default.conf /etc/apache2/sites-available/000-default.conf
 RUN a2ensite 000-default ; a2enmod rewrite vhost_alias
@@ -52,19 +54,23 @@ ADD ./files/xdebug.ini /etc/php5/mods-available/xdebug.ini
 # Display version information
 RUN php --version
 RUN composer --version
-RUN /.composer/vendor/drush/drush/drush --version && ln -s /.composer/vendor/drush/drush/drush /usr/bin/drush
+#RUN /.composer/vendor/drush/drush/drush --version && ln -s /.composer/vendor/drush/drush/drush /usr/bin/drush
 
 # Drupal new version, clean cache
 ADD https://www.drupal.org/project/drupal /tmp/latest.html
 
 # Retrieve drupal
-RUN rm -rf /var/www/html ; cd /var/www ; /.composer/vendor/drush/drush/drush -v dl drupal --default-major=8 --drupal-project-rename="html"
-RUN chmod a+w /var/www/html/sites/default ; mkdir /var/www/html/sites/default/files ; chown -R www-data:www-data /var/www/html/
+#RUN rm -rf /var/www/html ; cd /var/www ; /.composer/vendor/drush/drush/drush -v dl drupal --default-major=8 --drupal-project-rename="html"
+#RUN chmod a+w /var/www/html/sites/default ; mkdir /var/www/html/sites/default/files ; chown -R www-data:www-data /var/www/html/
 
 #Manage db with adminer
 RUN wget "http://www.adminer.org/latest.php" -O /var/www/html/adminer.php
 
-RUN chmod 755 /start.sh /etc/apache2/foreground.sh
+RUN chmod 755 /start.sh /etc/apache2/foreground.sh /localdb-run.sh /entrypoint.sh
 WORKDIR /var/www/html
 EXPOSE 22 80 3306
 CMD ["/bin/bash", "/start.sh"]
+
+
+#ENTRYPOINT ["/localdb-run.sh"]
+#RUN sed -e 's/user.=.mysql/user=root/' -i /etc/mysql/my.cnf
