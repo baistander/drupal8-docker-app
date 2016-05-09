@@ -21,33 +21,31 @@ if [ ! -d /var/lib/mysql/mysql ]; then
   /usr/bin/mysql_install_db > /dev/null
 fi
 
-/entrypoint.sh
-
 # Setup Drupal
-if [ ! -f /var/www/html/sites/default/settings.php ]; then
-	# Start mysql
-	/usr/bin/mysqld_safe --skip-syslog &
-	sleep 3s
-	# Generate random passwords
-	DRUPAL_DB="drupal"
-	ROOT_PASSWORD=`pwgen -c -n -1 12`
-	DRUPAL_PASSWORD=`pwgen -c -n -1 12`
-	echo $ROOT_PASSWORD > /var/lib/mysql/mysql/mysql-root-pw.txt
-	echo $DRUPAL_PASSWORD > /var/lib/mysql/mysql/drupal-db-pw.txt
-  PrintCreds $ROOT_PASSWORD $DRUPAL_PASSWORD
-  echo "root:${ROOT_PASSWORD}" | chpasswd
-	mysqladmin -u root password $ROOT_PASSWORD
-	mysql -uroot -p$ROOT_PASSWORD -e "CREATE DATABASE drupal; GRANT ALL PRIVILEGES ON drupal.* TO 'drupal'@'%' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
-	cd /var/www/html
-	cp sites/default/default.services.yml sites/default/services.yml
-	${DRUSH} site-install standard -y --account-name=admin --account-pass=admin \
-  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal" \
-  --site-name="Drupal8 docker App" | grep -v 'continue?'
-	${DRUSH} -y dl memcache | grep -v 'continue?'
-	${DRUSH} -y en memcache | grep -v 'continue?'
-	killall mysqld
-	sleep 3s
-else
+if [ -f /var/www/html/sites/default/settings.php ]; then
+	# # Start mysql
+	# /usr/bin/mysqld_safe --skip-syslog &
+	# sleep 3s
+	# # Generate random passwords
+	# DRUPAL_DB="drupal"
+	# ROOT_PASSWORD=`pwgen -c -n -1 12`
+	# DRUPAL_PASSWORD=`pwgen -c -n -1 12`
+	# echo $ROOT_PASSWORD > /var/lib/mysql/mysql/mysql-root-pw.txt
+	# echo $DRUPAL_PASSWORD > /var/lib/mysql/mysql/drupal-db-pw.txt
+ #  PrintCreds $ROOT_PASSWORD $DRUPAL_PASSWORD
+ #  echo "root:${ROOT_PASSWORD}" | chpasswd
+	# mysqladmin -u root password $ROOT_PASSWORD
+	# mysql -uroot -p$ROOT_PASSWORD -e "CREATE DATABASE drupal; GRANT ALL PRIVILEGES ON drupal.* TO 'drupal'@'%' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
+	# cd /var/www/html
+	# cp sites/default/default.services.yml sites/default/services.yml
+	# ${DRUSH} site-install standard -y --account-name=admin --account-pass=admin \
+ #  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal" \
+ #  --site-name="Drupal8 docker App" | grep -v 'continue?'
+	# ${DRUSH} -y dl memcache | grep -v 'continue?'
+	# ${DRUSH} -y en memcache | grep -v 'continue?'
+	# killall mysqld
+	# sleep 3s
+# else
 	ROOT_PASSWORD=$(cat /var/lib/mysql/mysql/mysql-root-pw.txt)
 	DRUPAL_PASSWORD=$(cat /var/lib/mysql/mysql/drupal-db-pw.txt)
   PrintCreds $ROOT_PASSWORD $DRUPAL_PASSWORD
