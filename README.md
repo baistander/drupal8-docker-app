@@ -13,35 +13,21 @@ To use it, make sure you first [Install Docker](https://docs.docker.com/installa
 
 https://docs.docker.com/installation/
 
-## 2 - Get the image and run it using port 80:
-
-```
-sudo docker run -i -t -p 80:80 ricardoamaro/drupal8
-```
-That's it!
-
-## 3 - Visit [http://localhost/](http://localhost/) in your browser
-using user/pass: admin/admin
-
-## 4 - Manage MySQL in your browser
-
-[http://localhost/adminer.php](http://localhost/adminer.php)
-
-# SPRINTING
-
-If you want **Code and Database persistence** with an already
-existent Drupal8 code that you have on your computer, run it with:
+## 2 - Mount mysql and drupal root folders and pull image
 
 ```
 cd; mkdir d8; cd d8
 
-git clone --depth 5 --branch 8.0.x http://git.drupal.org/project/drupal.git
+git clone --depth 5 --branch 8.1.x http://git.drupal.org/project/drupal.git
 
 sudo docker run -it \
 --volume=$HOME/d8/mysql:/var/lib/mysql \
 --volume=$HOME/d8/drupal:/var/www/html \
--p 80:80 -p 3306:3306 ricardoamaro/drupal8
+-p 80:80 -p 3306:3306 baistander/drupal8
 ```
+
+## 3 - Visit [http://localhost/](http://localhost/) in your browser
+
 
 You can remove the local settings.php and the mysql directory
 for a fresh Drupal8 install with existent code:
